@@ -155,17 +155,17 @@ class Maze:
     def __draw_cell(self, i, j):
         if 0 <= i < self.__width and 0 <= j < self.__height:
             self.__cells[j][i].draw()
-            self.__animate()
+            self.__animate(0.0)
         else:
             raise IndexError("Cell index out of bounds")
 
-    def __animate(self):
+    def __animate(self, delay=0.05):
         if self.__window is None:
             return
         if self.__check_interrupt and not self.__check_interrupt():
             raise InterruptedError("Animation interrupted")
         self.__window.redraw()
-        time.sleep(0.05)
+        time.sleep(delay)
 
     def __break_entrance(self):
         # Allow entrance on any position on the top row or west side
@@ -237,12 +237,65 @@ class Maze:
     def solve(self):
         self.__reset_visited()
         try:
-            return self.__solve_r(self.entrance[0], self.entrance[1])
+            # Draw Starting line from entrance edge to center
+            entrance_cell = self.__cells[self.entrance[1]][self.entrance[0]]
+            x = self.entrance[0]
+            y = self.entrance[1]
+            buffer = self.__buffer
+            cellwidth = entrance_cell.cellwidth
+            cellheight = entrance_cell.cellheight
+            # Calculate cell center
+            center_x = x * cellwidth + cellwidth // 2 + buffer
+            center_y = y * cellheight + cellheight // 2 + buffer
+            cell_center = Point(center_x, center_y)
+            # Determine which edge to start from
+            if y == 0 and entrance_cell.has_north_wall == False:
+                # Entrance is on the top row (north wall is open)
+                start_point = Point(center_x, y * cellheight + buffer // 2)
+            elif x == 0 and entrance_cell.has_west_wall == False:
+                # Entrance is on the west side (west wall is open)
+                start_point = Point(x * cellwidth + buffer // 2, center_y)
+            else:
+                # Fallback: just use the cell center
+                start_point = cell_center
+
+            line = Line(start_point, cell_center)
+            self.__window.drawLine(line, "red")
+            self.__animate(0.05)
+
+            result = self.__solve_r(self.entrance[0], self.entrance[1])
+            
+            # Draw the exit line if the exit is reached
+            if result:
+                exit_cell = self.exit
+                exit_x = exit_cell.get_location()[0]
+                exit_y = exit_cell.get_location()[1]
+                exit_center_x = exit_x * cellwidth + cellwidth // 2 + buffer
+                exit_center_y = exit_y * cellheight + cellheight // 2 + buffer
+                exit_center = Point(exit_center_x, exit_center_y)
+                
+
+                # Determine which edge to end at
+                if exit_y == self.__height - 1 and exit_cell.has_south_wall == False:
+                    # Exit is on the bottom row (south wall is open)
+                    end_point = Point(exit_center_x, (exit_y + 1) * cellheight + 1.5 * buffer)
+                elif exit_x == self.__width - 1 and exit_cell.has_east_wall == False:
+                    # Exit is on the east side (east wall is open)
+                    end_point = Point((exit_x + 1) * cellwidth + 1.5 * buffer, exit_center_y)
+                else:
+                    # Fallback: just use the cell center
+                    end_point = exit_center
+                
+                line = Line(exit_center, end_point)
+                self.__window.drawLine(line, "red")
+                self.__animate(0.05)
+            
+            return result
         except InterruptedError:
             return False
 
     def __solve_r(self, i, j,):
-        self.__animate()
+        self.__animate(0.03)
         self.__cells[j][i].visited = True
         if self.__cells[j][i] == self.exit:
             return True

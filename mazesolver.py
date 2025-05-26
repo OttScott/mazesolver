@@ -2,6 +2,7 @@ from Graphics import Window, Point, Line
 from maze import Walls, Cell, Maze
 import sys
 import signal
+import time
 
 # Flag to control the main loop
 running = True
@@ -17,8 +18,9 @@ signal.signal(signal.SIGINT, signal_handler)
 screen_x = 1024
 screen_y = 768
 buffer = 50
-num_cols = 12
-num_rows = 8
+num_cols = 30
+num_rows = 20
+
 cell_size_x = (screen_x - (2 * buffer)) / num_cols
 cell_size_y = (screen_y - (2 * buffer)) / num_rows
 
@@ -40,6 +42,7 @@ try:
         maze = Maze(win, num_cols, num_rows, cell_size_x, cell_size_y, buffer, entrance="random", exit="random", check_interrupt=check_running)
         try:
             maze.solve()
+            time.sleep(1.0)
         except InterruptedError:
             print("Maze solving interrupted")
             break
