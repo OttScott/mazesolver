@@ -294,8 +294,8 @@ class Maze:
         except InterruptedError:
             return False
 
-    def __solve_r(self, i, j,):
-        self.__animate(0.03)
+    def __solve_r(self, i, j, animateTime=0.03, backtrackTime=0.1):
+        self.__animate(animateTime)
         self.__cells[j][i].visited = True
         if self.__cells[j][i] == self.exit:
             return True
@@ -306,6 +306,7 @@ class Maze:
                 return True
             else:
                 self.__cells[j][i].draw_to_cell(self.__cells[j - 1][i], backtrack=True)
+                self.__animate(backtrackTime)
         # Check South
         if j < self.__height - 1 and not self.__cells[j + 1][i].visited and not self.__cells[j][i].has_south_wall:
             self.__cells[j][i].draw_to_cell(self.__cells[j + 1][i])
@@ -313,6 +314,7 @@ class Maze:
                 return True
             else:
                 self.__cells[j][i].draw_to_cell(self.__cells[j + 1][i], backtrack=True)
+                self.__animate(backtrackTime)
         # Check West
         if i > 0 and not self.__cells[j][i - 1].visited and not self.__cells[j][i].has_west_wall:
             self.__cells[j][i].draw_to_cell(self.__cells[j][i - 1])
@@ -320,6 +322,7 @@ class Maze:
                 return True
             else:
                 self.__cells[j][i].draw_to_cell(self.__cells[j][i - 1], backtrack=True)
+                self.__animate(backtrackTime)
         # Check East
         if i < self.__width - 1 and not self.__cells[j][i + 1].visited and not self.__cells[j][i].has_east_wall:
             self.__cells[j][i].draw_to_cell(self.__cells[j][i + 1])
@@ -327,6 +330,7 @@ class Maze:
                 return True
             else:
                 self.__cells[j][i].draw_to_cell(self.__cells[j][i + 1], backtrack=True)
+                self.__animate(backtrackTime)
         
         # If no path found, return False
         return False
