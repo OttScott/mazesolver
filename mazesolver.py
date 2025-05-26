@@ -17,8 +17,8 @@ signal.signal(signal.SIGINT, signal_handler)
 screen_x = 1024
 screen_y = 768
 buffer = 50
-num_cols = 6
-num_rows = 4
+num_cols = 12
+num_rows = 8
 cell_size_x = (screen_x - (2 * buffer)) / num_cols
 cell_size_y = (screen_y - (2 * buffer)) / num_rows
 
@@ -37,7 +37,7 @@ try:
             running = False
             break
             
-        maze = Maze(win, num_cols, num_rows, buffer, entrance="random", exit="random", check_interrupt=check_running)
+        maze = Maze(win, num_cols, num_rows, cell_size_x, cell_size_y, buffer, entrance="random", exit="random", check_interrupt=check_running)
         try:
             maze.solve()
         except InterruptedError:

@@ -81,7 +81,7 @@ class Cell:
         self.__window.drawLine(line, fill_color=color)
 
 class Maze:
-    def __init__(self, window=None, width=2, height=3, buffer=50, entrance=(0,0), exit=None, seed=None, check_interrupt=None):
+    def __init__(self, window=None, width=2, height=3, cellwidth = 20, cellheight = 20, buffer=50, entrance=(0,0), exit=None, seed=None, check_interrupt=None):
         if window != None:
             self.__window = window
         else:
@@ -94,8 +94,6 @@ class Maze:
 
         self.__width = width
         self.__height = height
-        cellwidth = 20
-        cellheight = 20
         self.__cells = [[Cell(window, x, y, cellwidth, cellheight) for x in range(width)] for y in range(height)]
         
         # If entrance is "random", pick a random position on top row or west side
