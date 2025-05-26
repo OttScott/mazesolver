@@ -37,7 +37,7 @@ try:
             running = False
             break
             
-        maze = Maze(win, num_cols, num_rows, buffer, check_interrupt=check_running)
+        maze = Maze(win, num_cols, num_rows, buffer, entrance="random", exit="random", check_interrupt=check_running)
         try:
             maze.solve()
         except InterruptedError:

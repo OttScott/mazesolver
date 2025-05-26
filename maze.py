@@ -97,19 +97,40 @@ class Maze:
         cellwidth = 20
         cellheight = 20
         self.__cells = [[Cell(window, x, y, cellwidth, cellheight) for x in range(width)] for y in range(height)]
+        
+        # If entrance is "random", pick a random position on top row or west side
+        if entrance == "random":
+            if random.choice([True, False]):  # Choose top row
+                entrance = (random.randint(0, width - 1), 0)
+            else:  # Choose west side
+                entrance = (0, random.randint(0, height - 1))
+        
         if entrance[0] < 0 or entrance[0] >= width or entrance[1] < 0 or entrance[1] >= height:
             raise ValueError("Entrance coordinates must be within the maze dimensions.")
         self.entrance = entrance
+        
+        # Handle exit positioning
+        if exit == "random":
+            if random.choice([True, False]):  # Choose bottom row
+                exit = (random.randint(0, width - 1), height - 1)
+            else:  # Choose east side
+                exit = (width - 1, random.randint(0, height - 1))
+        
         if exit is not None:
+            if exit[0] < 0 or exit[0] >= width or exit[1] < 0 or exit[1] >= height:
+                raise ValueError("Exit coordinates must be within the maze dimensions.")
             self.exit = self.__cells[exit[1]][exit[0]]
+            self.exit_coords = exit
         else:
             self.exit = self.__cells[height - 1][width - 1]
+            self.exit_coords = (width - 1, height - 1)
+        
         self.__buffer = buffer
         self.__check_interrupt = check_interrupt
         self.__break_entrance()
         self.__break_exit()
         self.__reset_visited()
-        self.__break_walls_r(entrance[1], entrance[0])
+        self.__break_walls_r(entrance[0], entrance[1])
     
     def draw(self):
         for row in self.__cells:
@@ -149,33 +170,33 @@ class Maze:
         time.sleep(0.05)
 
     def __break_entrance(self):
-        if self.entrance != 0 and self.entrance[0] != 0:
-            raise ValueError("Entrance must be at the top-left corner (0, 0) or on the first row or column.")
-        if self.entrance[1] == 0:
+        # Allow entrance on any position on the top row or west side
+        if self.entrance[1] == 0:  # Top row
             self.__cells[0][self.entrance[0]].has_north_wall = False
             self.__cells[0][self.entrance[0]].draw()
             self.__draw_cell(self.entrance[0], 0)
-        elif self.entrance[0] == 0:
+        elif self.entrance[0] == 0:  # West side
             self.__cells[self.entrance[1]][0].has_west_wall = False
             self.__cells[self.entrance[1]][0].draw()
             self.__draw_cell(0, self.entrance[1])
+        else:
+            raise ValueError("Entrance must be on the top row or west side.")
 
     def __break_exit(self, exit=None):
-        if exit is None:
-            self.__cells[self.__height - 1][self.__width - 1].has_south_wall = False
-            self.__cells[self.__height - 1][self.__width - 1].draw()
-            self.__draw_cell(self.__width - 1, self.__height - 1)
+        # Use the stored exit coordinates
+        exit_x, exit_y = self.exit_coords
+        
+        # Allow exit on any position on the bottom row or east side
+        if exit_y == self.__height - 1:  # Bottom row
+            self.__cells[exit_y][exit_x].has_south_wall = False
+            self.__cells[exit_y][exit_x].draw()
+            self.__draw_cell(exit_x, exit_y)
+        elif exit_x == self.__width - 1:  # East side
+            self.__cells[exit_y][exit_x].has_east_wall = False
+            self.__cells[exit_y][exit_x].draw()
+            self.__draw_cell(exit_x, exit_y)
         else:
-            if exit[1] != self.__height - 1 and exit[0] != self.__width - 1:
-                raise ValueError("Exit must be at the bottom-right corner or on the last row or column.")
-            if exit[1] == self.__height - 1:
-                self.__cells[self.__height - 1][exit[0]].has_south_wall = False
-                self.__cells[self.__height - 1][exit[0]].draw()
-                self.__draw_cell(exit[0], self.__height - 1)
-            elif exit[0] == self.__width - 1:
-                self.__cells[exit[1]][self.__width - 1].has_east_wall = False
-                self.__cells[exit[1]][self.__width - 1].draw()
-                self.__draw_cell(self.__width - 1, exit[1])
+            raise ValueError("Exit must be on the bottom row or east side.")
 
     def __break_walls_r(self, i, j):
         self.__cells[j][i].visited = True
@@ -218,7 +239,7 @@ class Maze:
     def solve(self):
         self.__reset_visited()
         try:
-            return self.__solve_r(0, 0)
+            return self.__solve_r(self.entrance[0], self.entrance[1])
         except InterruptedError:
             return False
 
